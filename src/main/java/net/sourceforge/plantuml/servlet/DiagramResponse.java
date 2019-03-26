@@ -168,7 +168,6 @@ class DiagramResponse {
     }
 
     public static void addHeaders(HttpServletResponse response) {
-        response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("X-Powered-By", POWERED_BY);
         response.addHeader("X-Patreon", "Support us on http://plantuml.com/patreon");
         response.addHeader("X-Donate", "http://plantuml.com/paypal");
