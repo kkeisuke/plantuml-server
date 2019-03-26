@@ -25,6 +25,7 @@ package net.sourceforge.plantuml.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,7 @@ import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.NullOutputStream;
 import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.StringUtils;
+import net.sourceforge.plantuml.code.Base64Coder;
 import net.sourceforge.plantuml.core.DiagramDescription;
 import net.sourceforge.plantuml.core.Diagram;
 import net.sourceforge.plantuml.core.ImageData;
@@ -64,6 +66,7 @@ class DiagramResponse {
         map.put(FileFormat.SVG, "image/svg+xml");
         map.put(FileFormat.EPS, "application/postscript");
         map.put(FileFormat.UTXT, "text/plain;charset=UTF-8");
+        map.put(FileFormat.BASE64, "text/plain; charset=x-user-defined");
         CONTENT_TYPE = Collections.unmodifiableMap(map);
     }
 
@@ -74,8 +77,18 @@ class DiagramResponse {
     }
 
     void sendDiagram(String uml, int idx) throws IOException {
+        response.addHeader("Access-Control-Allow-Origin", "*");
         response.setContentType(getContentType());
         SourceStringReader reader = new SourceStringReader(uml);
+        if (format == FileFormat.BASE64) {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final DiagramDescription result = reader.outputImage(baos, idx, new FileFormatOption(FileFormat.PNG));
+            baos.close();
+            final String encodedBytes = "data:image/png;base64,"
+                + Base64Coder.encodeLines(baos.toByteArray()).replaceAll("\\s", "");
+            response.getOutputStream().write(encodedBytes.getBytes());
+            return;
+        }
         final BlockUml blockUml = reader.getBlocks().get(0);
         if (notModified(blockUml)) {
             addHeaderForCache(blockUml);
@@ -85,7 +98,11 @@ class DiagramResponse {
         if (StringUtils.isDiagramCacheable(uml)) {
             addHeaderForCache(blockUml);
         }
-        reader.outputImage(response.getOutputStream(), new FileFormatOption(format, false));
+        final Diagram diagram = blockUml.getDiagram();
+        if (diagram instanceof PSystemError) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
+        final ImageData result = diagram.exportDiagram(response.getOutputStream(), idx, new FileFormatOption(format));
     }
 
     private boolean notModified(BlockUml blockUml) {

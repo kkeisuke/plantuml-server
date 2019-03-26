@@ -8,6 +8,18 @@
 		<param-value>exact</param-value>
 	</context-param>
 	<servlet>
+		<servlet-name>jsp</servlet-name>
+		<servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+		<init-param>
+			<param-name>compilerSourceVM</param-name>
+			<param-value>1.7</param-value>
+		</init-param>
+		<init-param>
+			<param-name>compilerTargetVM</param-name>
+			<param-value>1.7</param-value>
+		</init-param>
+	</servlet>
+	<servlet>
 		<servlet-name>plantumlservlet</servlet-name>
 		<servlet-class>net.sourceforge.plantuml.servlet.PlantUmlServlet</servlet-class>
 	</servlet>
@@ -31,6 +43,10 @@
 		<servlet-name>epstextservlet</servlet-name>
 		<servlet-class>net.sourceforge.plantuml.servlet.EpsTextServlet</servlet-class>
 	</servlet>
+    <servlet>
+        <servlet-name>base64servlet</servlet-name>
+        <servlet-class>net.sourceforge.plantuml.servlet.Base64Servlet</servlet-class>
+    </servlet>
 	<servlet>
 		<servlet-name>asciiservlet</servlet-name>
 		<servlet-class>net.sourceforge.plantuml.servlet.AsciiServlet</servlet-class>
@@ -84,6 +100,10 @@
 		<servlet-name>epstextservlet</servlet-name>
 		<url-pattern>/epstext/*</url-pattern>
 	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>base64servlet</servlet-name>
+        <url-pattern>/base64/*</url-pattern>
+    </servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>asciiservlet</servlet-name>
 		<url-pattern>/txt/*</url-pattern>
